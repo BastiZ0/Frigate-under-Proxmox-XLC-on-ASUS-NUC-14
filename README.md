@@ -43,7 +43,6 @@
 Falls Container schon läuft, stoppe ihn:
 
 ```bash
-
 pct stop 101
 ```
 
@@ -55,7 +54,6 @@ oder
 **Öffne / ergänze die CT-Config (Host):**
 
 ```bash
-
 nano /etc/pve/lxc/101.conf
 ```
 
@@ -63,7 +61,6 @@ nano /etc/pve/lxc/101.conf
 Füge am Ende ein (oder passe an):
 
 ```bash
-
 # erlauben der DRM devices (Intel iGPU)
 lxc.cgroup2.devices.allow: c 226:* rwm
 lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
@@ -84,7 +81,6 @@ lsusb
 danach - Starten des containers:
 
 ```bash
-
 pct start 101
 ```
 
@@ -94,8 +90,16 @@ oder
 
 # 3) Im Container prüfen (Console in Proxmox XLC)
 
-```bash
+Falls lsusb fehlt bzw noch nicht installiert ist ansonsten überspringen:
 
+```bash
+apt update
+apt install -y usbutils
+```
+
+Prüfen, ob die iGPU und der Coral USB korrekt durchgereicht werden.
+
+```bash
 ls -l /dev/dri
 lsusb
 ```
@@ -103,25 +107,16 @@ lsusb
 ## optional: nach Coral filtern
 
 ```bash
-
 lsusb | grep -i 1a6e || lsusb | grep -i coral || lsusb | grep -i google
 ```
 
 Erwartet: */dev/dri/renderD128 (oder card0) sichtbar und ein lsusb-Eintrag für Coral (1a6e:089a oder Global Unichip).*
 
-Falls lsusb fehlt bzw noch nicht installiert ist:
-
-```bash
-
-apt update
-apt install -y usbutils
-```
 
 
 # 4) Im LXC: System vorbereiten, Coral runtime & VAAPI
 
 ```bash
-
 apt update && apt upgrade -y
 apt install -y curl gnupg ca-certificates apt-transport-https software-properties-common
 ```
@@ -129,14 +124,12 @@ apt install -y curl gnupg ca-certificates apt-transport-https software-propertie
 ## Coral repo & Installation (Debian 12)
 
 ```bash
-
 curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor > /usr/share/keyrings/coral-archive-keyring.gpg
 ```
 
 Repo mit korrektem Verweis
 
 ```bash
-
 echo "deb [signed-by=/usr/share/keyrings/coral-archive-keyring.gpg] https://packages.cloud.google.com/apt coral-edgetpu-stable main" \
   | tee /etc/apt/sources.list.d/coral-edgetpu.list
 ```
@@ -147,6 +140,7 @@ apt update
 ```
 
 und
+
 ```bash
 apt install -y libedgetpu1-std
 ```
@@ -155,14 +149,12 @@ apt install -y libedgetpu1-std
 VAAPI / Intel media drivers (prüfen/installieren)
 
 ```bash
-
 apt install -y vainfo intel-media-va-driver
 ```
 
 ## prüfung (optionale Umgebungsvariable bei Bedarf)
 
 ```bash
-
 vainfo || LIBVA_DRIVER_NAME=iHD vainfo
 ```
 
@@ -201,23 +193,22 @@ docker run -d \
   portainer/portainer-ce:latest
 ```
 
-**Öffne Portainer: http://<LXC-IP>:9000 → Adminkonto anlegen.**
+**Öffne Portainer: http://"LXC-IP":9000 → Adminkonto anlegen.**
 
 # 6) Frigate Docker-Compose (Beispiel)
 
 **Erstelle das Verzeichnisse und die Compose-Datei:**
 
 ```bash
-
 mkdir -p /opt/frigate/config /media/frigate
 cd /opt/frigate
 nano docker-compose.yml
 ```
 
-**in die docker-compose.yml folgendes kopieren**
+in die docker-compose.yml folgendes kopieren oder unter Portainer einen neuen STACK erstellen und dort einfügen!
+
 
 ```yaml
-
 version: "3.9"
 services:
   frigate:
@@ -239,15 +230,17 @@ services:
     environment:
       - FRIGATE_RTSP_PASSWORD=HierDeinPasswortEintragen #<- trage hier dein sicheres Passwort ein
 ```
-	  
-	  
+**Passwort anpassen nicht vergessen!!!**
 
-Zum Ausführen der docker-compose und damit installieren von Frgate nach den oben genannten Einstellungen:
+.
+	  
+.
+
+Zum Ausführen der docker-compose und damit installieren von Frigate nach den oben genannten Einstellungen:
 
 
 
 ```bash
-
 docker compose up -d
 docker ps
 docker compose logs -f frigate
@@ -256,14 +249,15 @@ docker compose logs -f frigate
 
 # 7) Beispiel config.yml (Frigate) — HW accel + Coral
 
-**Nach dem Start noch auf der UI oder direkt in der config.yaml unter /opt/frigate/config/config.yml die Konfiguration anpassen.**
+**Nach dem Start noch auf der FRIGATE UI oder direkt in der config.yaml unter /opt/frigate/config/config.yml die Konfiguration anpassen.** 
 
 Siehe auch [Frigat-Konfiguration](https://docs.frigate.video/configuration/reference)
+
+Erreichbar unter der IP des XLCs -> http://192.168.XXX.XXX:5000
 
 Ein Beispiel, wie es mit Nutzung iGPU und Coral aussehen kann:
 
 ```yaml
-
 mqtt: 
   enabled: true  # or false <- für HomeAssistant unbedingt nötig, damit die [Frigate-Integration](https://docs.frigate.video/integrations/home-assistant/) läuft
   host: core-mosquitto
@@ -342,7 +336,6 @@ dmesg | grep -i i915
 Im Proxmox LXC:
 
 ```bash
-
 ls -l /dev/dri
 lsusb | grep -i 1a6e
 vainfo      # wenn installiert
@@ -359,7 +352,6 @@ Wenn Frigate vaapi oder edgetpu nicht erkennt, prüfe Logs (docker compose logs 
 Finde Bus/Device:
 
 ```bash
-
 lsusb
 ```
 
@@ -368,7 +360,6 @@ Ausgabe wäre z.B. Bus 004 Device 002 -> /dev/bus/usb/004/002
 *Host-Config Beispiel für LXC mit <CT-ID> 101 (nur diese Datei binden):*
 
 ```bash
-
 nano /etc/pve/lxc/101.conf
 lxc.mount.entry: /dev/bus/usb/004/002 dev/bus/usb/004/002 none bind,optional,create=file
 lxc.cgroup2.devices.allow: c 189:* rwm
