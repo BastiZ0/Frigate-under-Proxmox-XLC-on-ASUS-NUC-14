@@ -74,9 +74,14 @@ lxc.mount.entry: /dev/bus/usb dev/bus/usb none bind,optional,create=dir
 ```
 
 Für das einzelne Durchreichen des USB-Devices, statt /dev/bus/usb den konkreten Pfad z. B. /dev/bus/usb/004/002 benutzen (das wäre sauberer und weniger exposed).
-Zu Beginn und zum testen erstmal "alles durchreichen".
 
-Starten:
+Zum auslesen des Pfads:
+
+```bash
+lsusb
+```
+
+danach - Starten des containers:
 
 ```bash
 
