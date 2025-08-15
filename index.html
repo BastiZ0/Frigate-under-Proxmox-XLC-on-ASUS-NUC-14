@@ -58,6 +58,11 @@
             margin-bottom: 0.6rem;
         }
         /* Code-Blöcke */
+        .code-block-container {
+            position: relative;
+            margin-top: 0.75rem;
+            margin-bottom: 1.5rem; /* Mehr Platz nach dem Codeblock */
+        }
         pre {
             background-color: #ecf0f1; /* Hellerer Hintergrund für Code */
             padding: 1.2rem;
@@ -66,8 +71,6 @@
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
             font-size: 0.9rem;
             line-height: 1.4;
-            margin-top: 0.75rem;
-            margin-bottom: 0.75rem;
             color: #2d3748;
             border: 1px solid #dee2e6; /* Leichter Rand */
         }
@@ -76,6 +79,34 @@
             padding: 0.2em 0.4em;
             border-radius: 4px;
             font-size: 0.875rem;
+        }
+        /* Kopieren-Button */
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #007bff;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            opacity: 0.8;
+        }
+        .copy-button:hover {
+            background-color: #0056b3;
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+        .copy-button:active {
+            transform: translateY(0);
+        }
+        .copy-button.copied {
+            background-color: #28a745; /* Grün, wenn kopiert */
+            opacity: 1;
         }
         /* Listen-Styling */
         ul, ol {
@@ -134,6 +165,38 @@
             overflow-y: auto; /* Scrollbar bei zu viel Inhalt */
             transition: transform 0.3s ease-in-out; /* Übergang für Ein-/Ausblenden */
         }
+        .sidebar h3 {
+            color: #e9ecef; /* Hellerer Ton für Sidebar-Titel */
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #495057;
+        }
+        .sidebar button {
+            display: block; /* Jeder Button in einer neuen Zeile */
+            width: 100%;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            background-color: transparent;
+            border: none;
+            border-radius: 6px;
+            color: #adb5bd; /* Dezente Farbe für nicht-aktive Buttons */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+        .sidebar button:hover {
+            background-color: #495057; /* Hintergrund bei Hover */
+            color: white;
+        }
+        .sidebar button.active {
+            background-color: #007bff; /* Aktiver Button Blau */
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+
         /* Hamburger Menu Icon */
         .hamburger-menu {
             display: none; /* Standardmäßig versteckt auf Desktop */
@@ -227,8 +290,8 @@
                 <section id="intro-section" class="mb-10">
                     <h1 class="text-center text-blue-800 leading-tight">Frigate auf Proxmox LXC<br>iGPU & Coral TPU Guide</h1>
                     <p class="text-lg text-center mb-8 text-gray-700 max-w-2xl mx-auto">
-                        Dieser Guide führt dich durch die Installation von Frigate in einem
-                        <strong>Proxmox LXC-Container</strong>. Lerne, wie du deine Hardware optimal nutzt:
+                        Dieser Guide führt dich Schritt für Schritt durch die Installation von Frigate in einem
+                        <strong>Proxmox LXC-Container</strong>. Er zeigt, wie du deine Hardware optimal nutzt:
                         eine <strong>Intel iGPU</strong> für Videodekodierung und einen
                         <strong>Google Coral USB-Stick</strong> für schnelle Objekterkennung.
                     </p>
@@ -276,27 +339,42 @@
                     <p class="mt-4 text-gray-700">Wir reichen die iGPU und den Coral USB-Stick an den LXC durch.</p>
                     <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Stoppe den Container</strong> (ersetze `&lt;CT-ID&gt;`):
-                            <pre><code>pct stop &lt;CT-ID&gt;</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-stop">pct stop &lt;CT-ID&gt;</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-stop">Kopieren</button>
+                            </div>
                         </li>
                         <li><strong>Öffne die Container-Konfigurationsdatei</strong> auf dem Proxmox-Host:
-                            <pre><code>nano /etc/pve/lxc/&lt;CT-ID&gt;.conf</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-nano">nano /etc/pve/lxc/&lt;CT-ID&gt;.conf</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-nano">Kopieren</button>
+                            </div>
                         </li>
                         <li><strong>Füge folgende Zeilen am Ende der Datei ein</strong>:
-                            <pre><code># Erlaubt das Durchreichen der Intel iGPU
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-config"># Erlaubt das Durchreichen der Intel iGPU
 lxc.cgroup2.devices.allow: c 226:* rwm
 lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
 
 # Erlaubt das Durchreichen des gesamten USB-Busses für Coral
 lxc.cgroup2.devices.allow: c 189:* rwm
 lxc.mount.entry: /dev/bus/usb dev/bus/usb none bind,optional,create=dir</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-config">Kopieren</button>
+                            </div>
                             <p class="text-sm italic mt-2 text-gray-600">
                                 <strong>Tipp:</strong> Für eine spezifische USB-Gerätebindung (statt des gesamten Busses) ermittle den Pfad mit `lsusb` auf dem Host (z.B. `Bus 004 Device 002`) und nutze:
                             </p>
-                            <pre><code class="text-sm"># lxc.mount.entry: /dev/bus/usb/004/002 dev/bus/usb/004/002 none bind,optional,create=file</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-usb-tip"># lxc.mount.entry: /dev/bus/usb/004/002 dev/bus/usb/004/002 none bind,optional,create=file</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-usb-tip">Kopieren</button>
+                            </div>
                         </li>
                         <li><strong>Speichere</strong> (<code>Strg+O</code>, <code>Enter</code>) und <strong>schließe</strong> (<code>Strg+X</code>) die Datei.</li>
                         <li><strong>Starte den Container wieder:</strong>
-                            <pre><code>pct start &lt;CT-ID&gt;</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-start">pct start &lt;CT-ID&gt;</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-start">Kopieren</button>
+                            </div>
                             <p class="text-gray-700">iGPU und USB-Bus sollten nun im Container verfügbar sein.</p>
                         </li>
                     </ol>
@@ -310,13 +388,19 @@ lxc.mount.entry: /dev/bus/usb dev/bus/usb none bind,optional,create=dir</code></
 
                     <h3>3. Geräte im Container prüfen (Optional)</h3>
                     <p class="mt-4 text-gray-700">Überprüfe, ob iGPU und Coral USB im Container sichtbar sind:</p>
-                    <pre><code>ls -l /dev/dri
+                    <div class="code-block-container">
+                        <pre><code id="code-lxc-ls-devices">ls -l /dev/dri
 lsusb</code></pre>
+                        <button class="copy-button" data-target="code-lxc-ls-devices">Kopieren</button>
+                    </div>
                     <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Erwartet:</strong> `/dev/dri/renderD128` (oder `card0`) und ein `lsusb`-Eintrag für Coral (z.B. `1a6e:089a`).</li>
                         <li>**Falls `lsusb` fehlt:**
-                            <pre><code>apt update
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-install-usbutils">apt update
 apt install -y usbutils</code></pre>
+                                <button class="copy-button" data-target="code-lxc-install-usbutils">Kopieren</button>
+                            </div>
                         </li>
                     </ul>
 
@@ -324,13 +408,22 @@ apt install -y usbutils</code></pre>
                     <p class="mt-4 text-gray-700">Dieses Skript automatisiert die Installation von Paketen, Docker, Portainer und Frigate.</p>
                     <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Lade das Skript herunter:</strong>
-                            <pre><code>wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/frigate-install.sh</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-wget-script">wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/frigate-install.sh</code></pre>
+                                <button class="copy-button" data-target="code-lxc-wget-script">Kopieren</button>
+                            </div>
                         </li>
                         <li><strong>Mache es ausführbar:</strong>
-                            <pre><code>chmod +x frigate-install.sh</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-chmod-script">chmod +x frigate-install.sh</code></pre>
+                                <button class="copy-button" data-target="code-lxc-chmod-script">Kopieren</button>
+                            </div>
                         </li>
                         <li><strong>Starte das Skript</strong> und folge den Anweisungen. Es fragt nach einem Frigate-Passwort und wartet an jedem Schritt auf deine Bestätigung:
-                            <pre><code>./frigate-install.sh</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-run-script">./frigate-install.sh</code></pre>
+                                <button class="copy-button" data-target="code-lxc-run-script">Kopieren</button>
+                            </div>
                         </li>
                     </ol>
                     <p class="mt-4 text-gray-700"><strong>Das Skript erledigt automatisch:</strong></p>
@@ -350,12 +443,16 @@ apt install -y usbutils</code></pre>
                     <p class="mt-4 text-gray-700">Nach dem Start von Frigate konfigurierst du deine Kameras und Dienste in der <code>config.yml</code>.</p>
                     <p class="mt-2 text-gray-700">Die Datei findest du unter <code>/opt/frigate/config/</code>. Bearbeite sie entweder über die Frigate-Weboberfläche (<code>http://&lt;IP_DES_LXC&gt;:5000</code>) oder manuell per SSH mit <code>nano /opt/frigate/config/config.yml</code>.</p>
                     <p class="font-bold text-red-600 mt-4">Wichtig: Nach jeder Änderung an der <code>config.yml</code> den Frigate-Container neu starten:</p>
-                    <pre><code>cd /opt/frigate
+                    <div class="code-block-container">
+                        <pre><code id="code-frigate-restart-compose">cd /opt/frigate
 docker compose restart</code></pre>
+                        <button class="copy-button" data-target="code-frigate-restart-compose">Kopieren</button>
+                    </div>
 
                     <h3>Beispiel <code>config.yml</code></h3>
                     <p class="text-gray-700">Passe die Platzhalter (MQTT, Kameranames, RTSP-URLs) an deine Umgebung an.</p>
-                    <pre><code class="lang-yaml">mqtt:
+                    <div class="code-block-container">
+                        <pre><code id="code-frigate-example-config" class="lang-yaml">mqtt:
   enabled: true
   host: core-mosquitto # Deine MQTT-Broker IP (z.B. Home Assistant)
   port: 1883
@@ -397,6 +494,8 @@ cameras:
 
 # Weitere Einstellungen (objects, record, snapshots) können ergänzt werden.
 # Siehe offizielle Frigate-Dokumentation: https://docs.frigate.video/configuration/reference</code></pre>
+                        <button class="copy-button" data-target="code-frigate-example-config">Kopieren</button>
+                    </div>
                 </section>
 
                 <hr class="my-10 border-gray-300">
@@ -408,14 +507,23 @@ cameras:
                     <h3>Auf dem Proxmox-Host (NUC):</h3>
                     <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>iGPU-Geräte prüfen:</strong>
-                            <pre><code>ls -l /dev/dri</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-host-ls-dri">ls -l /dev/dri</code></pre>
+                                <button class="copy-button" data-target="code-host-ls-dri">Kopieren</button>
+                            </div>
                             <p class="text-sm italic"><em>Erwartet: <code>renderD128</code> (oder <code>card0</code>) sichtbar.</em></p>
                         </li>
                         <li><strong>Kernel-Meldungen zur iGPU:</strong>
-                            <pre><code>dmesg | grep -i i915</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-host-dmesg-i915">dmesg | grep -i i915</code></pre>
+                                <button class="copy-button" data-target="code-host-dmesg-i915">Kopieren</button>
+                            </div>
                         </li>
                         <li><strong>USB-Geräte prüfen:</strong>
-                            <pre><code>lsusb</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-host-lsusb">lsusb</code></pre>
+                                <button class="copy-button" data-target="code-host-lsusb">Kopieren</button>
+                            </div>
                             <p class="text-sm italic"><em>Coral-Stick sichtbar (z.B. <code>1a6e:xxxx</code>).</em></p>
                         </li>
                     </ul>
@@ -423,23 +531,38 @@ cameras:
                     <h3>Im LXC-Container:</h3>
                     <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>iGPU-Geräte im Container prüfen:</strong>
-                            <pre><code>ls -l /dev/dri</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-ls-dri">ls -l /dev/dri</code></pre>
+                                <button class="copy-button" data-target="code-lxc-ls-dri">Kopieren</button>
+                            </div>
                             <p class="text-sm italic"><em>Erwartet: <code>renderD128</code> (oder <code>card0</code>) sichtbar.</em></p>
                         </li>
                         <li><strong>USB-Geräte im Container prüfen:</strong>
-                            <pre><code>lsusb | grep -i 1a6e || lsusb | grep -i coral || lsusb | grep -i google</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-lsusb-coral">lsusb | grep -i 1a6e || lsusb | grep -i coral || lsusb | grep -i google</code></pre>
+                                <button class="copy-button" data-target="code-lxc-lsusb-coral">Kopieren</button>
+                            </div>
                             <p class="text-sm italic"><em>Coral-Stick sichtbar.</em></p>
                         </li>
                         <li><strong>VAAPI-Treiber-Status:</strong>
-                            <pre><code>vainfo || LIBVA_DRIVER_NAME=iHD vainfo</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-vainfo">vainfo || LIBVA_DRIVER_NAME=iHD vainfo</code></pre>
+                                <button class="copy-button" data-target="code-lxc-vainfo">Kopieren</button>
+                            </div>
                             <p class="text-sm italic"><em>Erwartet: Liste von H264/HEVC-Einträgen. "can't connect to X server!" kann ignoriert werden.</em></p>
                         </li>
                         <li><strong>Docker-Container-Status:</strong>
-                            <pre><code>docker ps</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-docker-ps">docker ps</code></pre>
+                                <button class="copy-button" data-target="code-lxc-docker-ps">Kopieren</button>
+                            </div>
                             <p class="text-sm italic"><em><code>frigate</code> und <code>portainer</code> als <code>Up</code> angezeigt.</em></p>
                         </li>
                         <li><strong>Frigate-Logs einsehen:</strong>
-                            <pre><code>docker compose logs -f frigate</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-frigate-logs">docker compose logs -f frigate</code></pre>
+                                <button class="copy-button" data-target="code-lxc-frigate-logs">Kopieren</button>
+                            </div>
                             <p class="text-sm italic"><em>Achte auf <code>Initialized VAAPI device</code> und <code>Attempting to load TPU as usb</code>.</em></p>
                         </li>
                     </ul>
@@ -512,27 +635,42 @@ cameras:
                     <p class="mt-4 text-gray-700">We will pass through the iGPU and Coral USB stick to the LXC.</p>
                     <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Stop the container</strong> (replace `&lt;CT-ID&gt;`):
-                            <pre><code>pct stop &lt;CT-ID&gt;</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-stop-en">pct stop &lt;CT-ID&gt;</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-stop-en">Copy</button>
+                            </div>
                         </li>
                         <li><strong>Open the container's configuration file</strong> on the Proxmox host:
-                            <pre><code>nano /etc/pve/lxc/&lt;CT-ID&gt;.conf</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-nano-en">nano /etc/pve/lxc/&lt;CT-ID&gt;.conf</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-nano-en">Copy</button>
+                            </div>
                         </li>
                         <li><strong>Add the following lines to the end of the file</strong>:
-                            <pre><code># Allows passthrough of the Intel iGPU
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-config-en"># Allows passthrough of the Intel iGPU
 lxc.cgroup2.devices.allow: c 226:* rwm
 lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
 
 # Allows passthrough of the entire USB bus for Coral
 lxc.cgroup2.devices.allow: c 189:* rwm
 lxc.mount.entry: /dev/bus/usb dev/bus/usb none bind,optional,create=dir</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-config-en">Copy</button>
+                            </div>
                             <p class="text-sm italic mt-2 text-gray-600">
                                 <strong>Tip:</strong> For specific USB device binding (instead of the entire bus), determine the path with `lsusb` on the host (e.g., `Bus 004 Device 002`) and use:
                             </p>
-                            <pre><code class="text-sm"># lxc.mount.entry: /dev/bus/usb/004/002 dev/bus/usb/004/002 none bind,optional,create=file</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-usb-tip-en"># lxc.mount.entry: /dev/bus/usb/004/002 dev/bus/usb/004/002 none bind,optional,create=file</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-usb-tip-en">Copy</button>
+                            </div>
                         </li>
                         <li><strong>Save</strong> (<code>Ctrl+O</code>, <code>Enter</code>) and <strong>exit</strong> (<code>Ctrl+X</code>) the file.</li>
                         <li><strong>Start the container again:</strong>
-                            <pre><code>pct start &lt;CT-ID&gt;</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-proxmox-start-en">pct start &lt;CT-ID&gt;</code></pre>
+                                <button class="copy-button" data-target="code-proxmox-start-en">Copy</button>
+                            </div>
                             <p class="text-gray-700">iGPU and USB bus should now be available in the container.</p>
                         </li>
                     </ol>
@@ -546,13 +684,19 @@ lxc.mount.entry: /dev/bus/usb dev/bus/usb none bind,optional,create=dir</code></
 
                     <h3>3. Verify Devices in Container (Optional)</h3>
                     <p class="mt-4 text-gray-700">Check if iGPU and Coral USB are visible in the container:</p>
-                    <pre><code>ls -l /dev/dri
+                    <div class="code-block-container">
+                        <pre><code id="code-lxc-ls-devices-en">ls -l /dev/dri
 lsusb</code></pre>
+                        <button class="copy-button" data-target="code-lxc-ls-devices-en">Copy</button>
+                    </div>
                     <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Expected:</strong> `/dev/dri/renderD128` (or `card0`) and an `lsusb` entry for Coral (e.g., `1a6e:089a`).</li>
                         <li>**If `lsusb` is missing:**
-                            <pre><code>apt update
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-install-usbutils-en">apt update
 apt install -y usbutils</code></pre>
+                                <button class="copy-button" data-target="code-lxc-install-usbutils-en">Copy</button>
+                            </div>
                         </li>
                     </ul>
 
@@ -560,13 +704,22 @@ apt install -y usbutils</code></pre>
                     <p class="mt-4 text-gray-700">This script automates package, Docker, Portainer, and Frigate installation.</p>
                     <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Download the script:</strong>
-                            <pre><code>wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/frigate-install.sh</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-wget-script-en">wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/frigate-install.sh</code></pre>
+                                <button class="copy-button" data-target="code-lxc-wget-script-en">Copy</button>
+                            </div>
                         </li>
                         <li><strong>Make it executable:</strong>
-                            <pre><code>chmod +x frigate-install.sh</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-chmod-script-en">chmod +x frigate-install.sh</code></pre>
+                                <button class="copy-button" data-target="code-lxc-chmod-script-en">Copy</button>
+                            </div>
                         </li>
                         <li><strong>Start the script</strong> and follow prompts. It asks for a Frigate password and waits for your confirmation at each step:
-                            <pre><code>./frigate-install.sh</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-run-script-en">./frigate-install.sh</code></pre>
+                                <button class="copy-button" data-target="code-lxc-run-script-en">Copy</button>
+                            </div>
                         </li>
                     </ol>
                     <p class="mt-4 text-gray-700"><strong>The script automates:</strong></p>
@@ -586,12 +739,16 @@ apt install -y usbutils</code></pre>
                     <p class="mt-4 text-gray-700">Once Frigate is running, configure your cameras and services in `config.yml`.</p>
                     <p class="mt-2 text-gray-700">Find the file at <code>/opt/frigate/config/</code>. Edit via Frigate web UI (<code>http://&lt;LXC_IP&gt;:5000</code>) or manually with <code>nano /opt/frigate/config/config.yml</code>.</p>
                     <p class="font-bold text-red-600 mt-4">Important: Restart the Frigate container after every `config.yml` change:</p>
-                    <pre><code>cd /opt/frigate
+                    <div class="code-block-container">
+                        <pre><code id="code-frigate-restart-compose-en">cd /opt/frigate
 docker compose restart</code></pre>
+                        <button class="copy-button" data-target="code-frigate-restart-compose-en">Copy</button>
+                    </div>
 
                     <h3>Example <code>config.yml</code></h3>
                     <p class="text-gray-700">Adjust placeholders (MQTT, camera names, RTSP URLs) to your environment.</p>
-                    <pre><code class="lang-yaml">mqtt:
+                    <div class="code-block-container">
+                        <pre><code id="code-frigate-example-config-en" class="lang-yaml">mqtt:
   enabled: true
   host: core-mosquitto # Your MQTT broker IP (e.g., Home Assistant)
   port: 1883
@@ -633,6 +790,8 @@ cameras:
 
 # Further settings (objects, record, snapshots) can be added.
 # See official Frigate documentation: https://docs.frigate.video/configuration/reference</code></pre>
+                        <button class="copy-button" data-target="code-frigate-example-config-en">Copy</button>
+                    </div>
                 </section>
 
                 <hr class="my-10 border-gray-300">
@@ -644,14 +803,23 @@ cameras:
                     <h3>On the Proxmox Host (Your NUC):</h3>
                     <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Check iGPU devices:</strong>
-                            <pre><code>ls -l /dev/dri</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-host-ls-dri-en">ls -l /dev/dri</code></pre>
+                                <button class="copy-button" data-target="code-host-ls-dri-en">Copy</button>
+                            </div>
                             <p class="text-sm italic"><em>Expected: <code>renderD128</code> (or <code>card0</code>) visible.</em></p>
                         </li>
                         <li><strong>Kernel messages for iGPU:</strong>
-                            <pre><code>dmesg | grep -i i915</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-host-dmesg-i915-en">dmesg | grep -i i915</code></pre>
+                                <button class="copy-button" data-target="code-host-dmesg-i915-en">Copy</button>
+                            </div>
                         </li>
                         <li><strong>Check USB devices:</strong>
-                            <pre><code>lsusb</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-host-lsusb-en">lsusb</code></pre>
+                                <button class="copy-button" data-target="code-host-lsusb-en">Copy</button>
+                            </div>
                             <p class="text-sm italic"><em>Coral stick visible (e.g., <code>1a6e:xxxx</code>).</em></p>
                         </li>
                     </ul>
@@ -659,23 +827,38 @@ cameras:
                     <h3>In the LXC Container:</h3>
                     <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Check iGPU devices in container:</strong>
-                            <pre><code>ls -l /dev/dri</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-ls-dri-en">ls -l /dev/dri</code></pre>
+                                <button class="copy-button" data-target="code-lxc-ls-dri-en">Copy</button>
+                            </div>
                             <p class="text-sm italic"><em>Expected: <code>renderD128</code> (or <code>card0</code>) visible.</em></p>
                         </li>
                         <li><strong>Check USB devices in container:</strong>
-                            <pre><code>lsusb | grep -i 1a6e || lsusb | grep -i coral || lsusb | grep -i google</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-lsusb-coral-en">lsusb | grep -i 1a6e || lsusb | grep -i coral || lsusb | grep -i google</code></pre>
+                                <button class="copy-button" data-target="code-lxc-lsusb-coral-en">Copy</button>
+                            </div>
                             <p class="text-sm italic"><em>Coral stick visible.</em></p>
                         </li>
                         <li><strong>VAAPI driver status:</strong>
-                            <pre><code>vainfo || LIBVA_DRIVER_NAME=iHD vainfo</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-vainfo-en">vainfo || LIBVA_DRIVER_NAME=iHD vainfo</code></pre>
+                                <button class="copy-button" data-target="code-lxc-vainfo-en">Copy</button>
+                            </div>
                             <p class="text-sm italic"><em>Expected: List of H264/HEVC entries. "can't connect to X server!" can be ignored.</em></p>
                         </li>
                         <li><strong>Docker container status:</strong>
-                            <pre><code>docker ps</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-docker-ps-en">docker ps</code></pre>
+                                <button class="copy-button" data-target="code-lxc-docker-ps-en">Copy</button>
+                            </div>
                             <p class="text-sm italic"><em><code>frigate</code> and <code>portainer</code> displayed as <code>Up</code>.</em></p>
                         </li>
                         <li><strong>View Frigate logs:</strong>
-                            <pre><code>docker compose logs -f frigate</code></pre>
+                            <div class="code-block-container">
+                                <pre><code id="code-lxc-frigate-logs-en">docker compose logs -f frigate</code></pre>
+                                <button class="copy-button" data-target="code-lxc-frigate-logs-en">Copy</button>
+                            </div>
                             <p class="text-sm italic"><em>Look for <code>Initialized VAAPI device</code> and <code>Attempting to load TPU as usb</code>.</em></p>
                         </li>
                     </ul>
@@ -784,6 +967,63 @@ cameras:
                 sidebar.classList.remove('active');
             }
         });
+
+        // Kopieren-Button Funktionalität
+        document.querySelectorAll('.copy-button').forEach(button => {
+            button.addEventListener('click', async function() {
+                const targetId = this.dataset.target;
+                const codeElement = document.getElementById(targetId);
+                if (codeElement) {
+                    const textToCopy = codeElement.textContent;
+                    try {
+                        // navigator.clipboard.writeText ist die moderne Methode, funktioniert aber nicht immer in iFrames
+                        await navigator.clipboard.writeText(textToCopy);
+                        this.textContent = 'Kopiert!';
+                        this.classList.add('copied');
+                    } catch (err) {
+                        // Fallback für Umgebungen, in denen navigator.clipboard nicht verfügbar ist (z.B. einige iFrames)
+                        const textArea = document.createElement('textarea');
+                        textArea.value = textToCopy;
+                        textArea.style.position = 'fixed'; // Verhindert Scrollen
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            this.textContent = 'Kopiert!';
+                            this.classList.add('copied');
+                        } catch (execErr) {
+                            console.error('Kopieren fehlgeschlagen:', execErr);
+                            this.textContent = 'Fehler!';
+                            this.classList.remove('copied');
+                        } finally {
+                            document.body.removeChild(textArea);
+                        }
+                    }
+                    setTimeout(() => {
+                        this.textContent = (this.closest('.lang-content').id === 'content-de') ? 'Kopieren' : 'Copy';
+                        this.classList.remove('copied');
+                    }, 2000); // Text nach 2 Sekunden zurücksetzen
+                }
+            });
+        });
+
+        // Aktualisiere den Text des Kopieren-Buttons beim Sprachwechsel
+        document.getElementById('lang-de-btn').addEventListener('click', () => {
+            document.querySelectorAll('.copy-button').forEach(button => {
+                if (!button.classList.contains('copied')) { // Nur ändern, wenn nicht gerade kopiert
+                    button.textContent = 'Kopieren';
+                }
+            });
+        });
+        document.getElementById('lang-en-btn').addEventListener('click', () => {
+            document.querySelectorAll('.copy-button').forEach(button => {
+                if (!button.classList.contains('copied')) { // Nur ändern, wenn nicht gerade kopiert
+                    button.textContent = 'Copy';
+                }
+            });
+        });
+
     </script>
 </body>
 </html>
