@@ -28,18 +28,18 @@
         }
         /* Überschriften-Styling */
         h1 {
-            font-size: 3rem; /* Größerer Titel */
+            font-size: 3.5rem; /* Noch größerer Titel */
             font-weight: 700;
             color: #212529;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem; /* Mehr Abstand */
             text-align: center;
         }
         h2 {
             font-size: 2.2rem;
             font-weight: 600;
             color: #2c3e50;
-            margin-top: 2.5rem;
-            margin-bottom: 1.2rem;
+            margin-top: 3rem; /* Mehr Abstand oben */
+            margin-bottom: 1.5rem; /* Mehr Abstand unten */
             padding-bottom: 0.5rem;
             border-bottom: 2px solid #e9ecef; /* Trennlinie unter Hauptüberschriften */
         }
@@ -119,8 +119,8 @@
         }
         /* Sidebar Styling */
         .sidebar {
-            width: 250px; /* Feste Breite */
-            min-width: 220px; /* Minimale Breite, falls flex */
+            width: 280px; /* Etwas breiter für bessere Lesbarkeit */
+            min-width: 250px;
             background-color: #343a40; /* Dunkler Hintergrund */
             color: #f8f9fa; /* Heller Text */
             padding: 1.5rem 1rem;
@@ -132,41 +132,30 @@
             height: fit-content; /* Passt sich dem Inhalt an */
             max-height: calc(100vh - 2rem); /* Max Höhe, um Scrollen zu erlauben */
             overflow-y: auto; /* Scrollbar bei zu viel Inhalt */
+            transition: transform 0.3s ease-in-out; /* Übergang für Ein-/Ausblenden */
         }
-        .sidebar h3 {
-            color: #e9ecef; /* Hellerer Ton für Sidebar-Titel */
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #495057;
-        }
-        .sidebar button {
-            display: block; /* Jeder Button in einer neuen Zeile */
-            width: 100%;
-            padding: 0.8rem 1rem;
-            text-align: left;
-            background-color: transparent;
-            border: none;
-            border-radius: 6px;
-            color: #adb5bd; /* Dezente Farbe für nicht-aktive Buttons */
+        /* Hamburger Menu Icon */
+        .hamburger-menu {
+            display: none; /* Standardmäßig versteckt auf Desktop */
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            font-size: 0.95rem;
-            font-weight: 400;
+            padding: 10px;
+            z-index: 1000; /* Über dem Inhalt */
+            background-color: #343a40;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            align-self: flex-start; /* Links oben im mobilen Layout */
         }
-        .sidebar button:hover {
-            background-color: #495057; /* Hintergrund bei Hover */
-            color: white;
-        }
-        .sidebar button.active {
-            background-color: #007bff; /* Aktiver Button Blau */
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        .hamburger-menu span {
+            display: block;
+            width: 30px;
+            height: 3px;
+            background-color: white;
+            margin: 6px 0;
+            transition: 0.4s;
         }
 
         /* Responsive Anpassungen für kleinere Bildschirme */
-        @media (max-width: 900px) {
+        @media (max-width: 1023px) { /* Lg breakpoint in Tailwind ist 1024px */
             .container-wrapper {
                 flex-direction: column; /* Spaltenlayout auf kleinen Bildschirmen */
             }
@@ -174,14 +163,31 @@
                 width: 100%; /* Volle Breite */
                 margin-right: 0;
                 margin-bottom: 1.5rem; /* Abstand zum Hauptinhalt */
-                position: static; /* Nicht mehr sticky */
-                max-height: none; /* Keine feste Höhe */
+                position: fixed; /* Fixiert, um über Inhalt zu liegen */
+                top: 0;
+                left: 0;
+                height: 100%;
+                border-radius: 0;
+                transform: translateX(-100%); /* Standardmäßig versteckt */
+                z-index: 999; /* Unter Hamburger, über Main-Content */
+                box-shadow: none; /* Keine Schatten im versteckten Zustand */
+            }
+            .sidebar.active {
+                transform: translateX(0); /* Angezeigt */
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); /* Schatten nur bei Anzeige */
+            }
+            .hamburger-menu {
+                display: block; /* Hamburger-Menü auf Mobilgeräten anzeigen */
+                position: fixed; /* Fixiert oben links */
+                top: 1rem;
+                left: 1rem;
             }
             .main-content {
                 padding: 1rem; /* Weniger Padding auf kleinen Bildschirmen */
+                margin-top: 4rem; /* Platz für Hamburger */
             }
-            h1 { font-size: 2rem; }
-            h2 { font-size: 1.8rem; }
+            h1 { font-size: 2.2rem; margin-bottom: 1.5rem; }
+            h2 { font-size: 1.8rem; margin-top: 2rem; }
             h3 { font-size: 1.4rem; }
             h4 { font-size: 1.1rem; }
         }
@@ -189,8 +195,15 @@
 </head>
 <body class="p-4 bg-gray-100">
     <div class="flex flex-col lg:flex-row container-wrapper max-w-screen-xl mx-auto items-start">
+        <!-- Hamburger Menu Icon (Mobile Only) -->
+        <div class="hamburger-menu" id="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
         <!-- Sidebar Navigation -->
-        <aside class="sidebar rounded-xl shadow-lg flex-shrink-0 mb-6 lg:mb-0">
+        <aside class="sidebar rounded-xl shadow-lg flex-shrink-0 mb-6 lg:mb-0 lg:block" id="sidebar">
             <h3 class="text-white text-center mb-4 pb-2 border-b border-gray-600">Navigation</h3>
             <div class="space-y-2">
                 <button class="nav-button active" data-target="intro-section">Einführung</button>
@@ -212,18 +225,17 @@
             <!-- German Content Section -->
             <div id="content-de" class="lang-content active">
                 <section id="intro-section" class="mb-10">
-                    <h1 class="text-center text-blue-800">Frigate auf Proxmox LXC</h1>
-                    <h1 class="text-center text-blue-800">iGPU & Coral TPU Guide</h1>
-                    <p class="text-lg text-center mb-8 text-gray-700">
-                        Dieser Guide führt dich Schritt für Schritt durch die Installation von Frigate in einem
-                        <strong>Proxmox LXC-Container</strong>. Er zeigt, wie du deine Hardware optimal nutzt:
+                    <h1 class="text-center text-blue-800 leading-tight">Frigate auf Proxmox LXC<br>iGPU & Coral TPU Guide</h1>
+                    <p class="text-lg text-center mb-8 text-gray-700 max-w-2xl mx-auto">
+                        Dieser Guide führt dich durch die Installation von Frigate in einem
+                        <strong>Proxmox LXC-Container</strong>. Lerne, wie du deine Hardware optimal nutzt:
                         eine <strong>Intel iGPU</strong> für Videodekodierung und einen
                         <strong>Google Coral USB-Stick</strong> für schnelle Objekterkennung.
                     </p>
 
-                    <h2 class="text-xl text-blue-700 mt-8 mb-4">📋 Überblick</h2>
+                    <h2 class="text-xl text-blue-700 mt-10 mb-4">📋 Überblick</h2>
                     <p class="text-gray-700">Die Installation ist in mehrere Abschnitte unterteilt:</p>
-                    <ol class="list-decimal pl-6 mt-4 text-gray-700">
+                    <ol class="list-decimal pl-6 mt-4 text-gray-700 space-y-2">
                         <li><strong>Proxmox Host Vorbereitung</strong>: LXC-Erstellung und Hardware-Durchreichen.</li>
                         <li><strong>Installation im LXC-Container</strong>: Ausführen des Installationsskripts für Docker, Portainer und Frigate.</li>
                         <li><strong>Frigate Konfiguration (config.yml)</strong>: Anpassung der Frigate-Konfigurationsdatei.</li>
@@ -231,11 +243,11 @@
                         <li><strong>Sicherheitshinweise</strong>: Wichtige Hinweise zum sicheren Betrieb.</li>
                     </ol>
 
-                    <h2 class="text-xl text-blue-700 mt-8 mb-4">💡 Wichtige Hinweise vorab</h2>
+                    <h2 class="text-xl text-blue-700 mt-10 mb-4">💡 Wichtige Hinweise vorab</h2>
                     <p class="text-gray-700 mb-2">
                         Getestet auf: **ASUS NUC 14 Essential** mit **Intel N250 Prozessor, 24GB Crucial RAM und 1TB SSD**.
                     </p>
-                    <ul class="list-disc pl-6 text-gray-700">
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
                         <li><strong>LXC-Modus:</strong> Wir nutzen einen **privilegierten LXC-Container** mit aktivierter **Nesting**-Funktion. Dies ist entscheidend für Docker und Hardware-Passthrough. Beachte die <a href="#security-notes">Sicherheitshinweise</a>.</li>
                         <li><strong>IP-Adressen:</strong> Ersetze `IP_DES_LXC`, `192.168.XXX.XXX` und `192.168.YYY.YYY` durch deine tatsächlichen IP-Adressen.</li>
                     </ul>
@@ -249,7 +261,7 @@
 
                     <h3>1. LXC-Container erstellen</h3>
                     <p class="mt-4 text-gray-700">Erstelle einen neuen LXC über die **Proxmox-Weboberfläche**. Wichtige Einstellungen:</p>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Template:</strong> Debian 12 (bookworm) oder Ubuntu 22.04.</li>
                         <li><strong>Hostname:</strong> z.B. `frigate`.</li>
                         <li><strong>Speicher:</strong> 10-20 GB.</li>
@@ -262,7 +274,7 @@
 
                     <h3>2. Hardware-Durchreichung (Intel iGPU & Coral USB)</h3>
                     <p class="mt-4 text-gray-700">Wir reichen die iGPU und den Coral USB-Stick an den LXC durch.</p>
-                    <ol class="list-decimal pl-6 mt-2 text-gray-700">
+                    <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Stoppe den Container</strong> (ersetze `&lt;CT-ID&gt;`):
                             <pre><code>pct stop &lt;CT-ID&gt;</code></pre>
                         </li>
@@ -300,7 +312,7 @@ lxc.mount.entry: /dev/bus/usb dev/bus/usb none bind,optional,create=dir</code></
                     <p class="mt-4 text-gray-700">Überprüfe, ob iGPU und Coral USB im Container sichtbar sind:</p>
                     <pre><code>ls -l /dev/dri
 lsusb</code></pre>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Erwartet:</strong> `/dev/dri/renderD128` (oder `card0`) und ein `lsusb`-Eintrag für Coral (z.B. `1a6e:089a`).</li>
                         <li>**Falls `lsusb` fehlt:**
                             <pre><code>apt update
@@ -310,19 +322,19 @@ apt install -y usbutils</code></pre>
 
                     <h3>4. Interaktives Installationsskript ausführen</h3>
                     <p class="mt-4 text-gray-700">Dieses Skript automatisiert die Installation von Paketen, Docker, Portainer und Frigate.</p>
-                    <ol class="list-decimal pl-6 mt-2 text-gray-700">
+                    <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Lade das Skript herunter:</strong>
-                            <pre><code>wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/install.sh</code></pre>
+                            <pre><code>wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/frigate-install.sh</code></pre>
                         </li>
                         <li><strong>Mache es ausführbar:</strong>
-                            <pre><code>chmod +x install.sh</code></pre>
+                            <pre><code>chmod +x frigate-install.sh</code></pre>
                         </li>
                         <li><strong>Starte das Skript</strong> und folge den Anweisungen. Es fragt nach einem Frigate-Passwort und wartet an jedem Schritt auf deine Bestätigung:
-                            <pre><code>./install.sh</code></pre>
+                            <pre><code>./frigate-install.sh</code></pre>
                         </li>
                     </ol>
                     <p class="mt-4 text-gray-700"><strong>Das Skript erledigt automatisch:</strong></p>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li>System-Updates und Paketinstallation (Coral Runtime, VAAPI-Treiber).</li>
                         <li>Docker, Docker Compose und Portainer-Installation.</li>
                         <li>Erstellung der Frigate-Verzeichnisse und der `docker-compose.yml`.</li>
@@ -383,17 +395,6 @@ cameras:
           roles:
             - detect # Für Detektion (ressourcenschonend)
 
-  Camera_2:
-    enabled: true
-    ffmpeg:
-      inputs:
-        - path: rtsp://127.0.0.1:8554/Camera_2_main
-          roles:
-            - record
-        - path: rtsp://127.0.0.1:8554/Camera_2_sub
-          roles:
-            - detect
-
 # Weitere Einstellungen (objects, record, snapshots) können ergänzt werden.
 # Siehe offizielle Frigate-Dokumentation: https://docs.frigate.video/configuration/reference</code></pre>
                 </section>
@@ -405,7 +406,7 @@ cameras:
                     <p class="mt-4 text-gray-700">Bei Problemen helfen diese Befehle, die Ursache zu finden:</p>
 
                     <h3>Auf dem Proxmox-Host (NUC):</h3>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>iGPU-Geräte prüfen:</strong>
                             <pre><code>ls -l /dev/dri</code></pre>
                             <p class="text-sm italic"><em>Erwartet: <code>renderD128</code> (oder <code>card0</code>) sichtbar.</em></p>
@@ -420,7 +421,7 @@ cameras:
                     </ul>
 
                     <h3>Im LXC-Container:</h3>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>iGPU-Geräte im Container prüfen:</strong>
                             <pre><code>ls -l /dev/dri</code></pre>
                             <p class="text-sm italic"><em>Erwartet: <code>renderD128</code> (oder <code>card0</code>) sichtbar.</em></p>
@@ -448,7 +449,7 @@ cameras:
 
                 <section id="security-notes" class="mb-10">
                     <h2>⚠️ Sicherheitshinweise & Allgemeine Hinweise</h2>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Privilegierter LXC:</strong> Die Nutzung eines <strong>privilegierten LXC-Containers</strong> mit <strong>Bindmounts</strong> birgt Sicherheitsrisiken. Nur in deinem <strong>vertrauenswürdigen Heimnetzwerk</strong> einsetzen.</li>
                         <li><strong>Speicherplatz:</strong> Frigate-Logs und Aufnahmen benötigen viel Platz. Externe USB-SSD oder NFS für `/media/frigate` ist sinnvoll.</li>
                         <li><strong>Backups:</strong> Regelmäßige Backups deiner LXCs via Proxmox GUI.</li>
@@ -460,18 +461,17 @@ cameras:
             <!-- English Content Section -->
             <div id="content-en" class="lang-content">
                 <section id="intro-section-en" class="mb-10">
-                    <h1 class="text-center text-blue-800">Frigate Installation on Proxmox LXC</h1>
-                    <h1 class="text-center text-blue-800">Intel iGPU & Coral TPU Guide</h1>
-                    <p class="text-lg text-center mb-8 text-gray-700">
+                    <h1 class="text-center text-blue-800 leading-tight">Frigate Installation on Proxmox LXC<br>Intel iGPU & Coral TPU Guide</h1>
+                    <p class="text-lg text-center mb-8 text-gray-700 max-w-2xl mx-auto">
                         This guide walks you through the installation of Frigate in a
                         <strong>Proxmox LXC container</strong>. It shows you how to optimize hardware usage:
                         an <strong>Intel iGPU</strong> for video decoding and a
                         <strong>Google Coral USB stick</strong> for fast object detection.
                     </p>
 
-                    <h2 class="text-xl text-blue-700 mt-8 mb-4">📋 Overview</h2>
-                    <p class="text-gray-700">The installation is divided into several sections:</p>
-                    <ol class="list-decimal pl-6 mt-4 text-gray-700">
+                    <h2 class="text-xl text-blue-700 mt-10 mb-4">📋 Overview</h2>
+                    <p class="text-gray-700">The installation is divided into several sections for clarity:</p>
+                    <ol class="list-decimal pl-6 mt-4 text-gray-700 space-y-2">
                         <li><strong>Proxmox Host Preparation</strong>: LXC creation and hardware passthrough.</li>
                         <li><strong>LXC Container Installation</strong>: Running the installation script for Docker, Portainer, and Frigate.</li>
                         <li><strong>Frigate Configuration (config.yml)</strong>: Customizing the Frigate configuration file.</li>
@@ -479,11 +479,11 @@ cameras:
                         <li><strong>Security Notes</strong>: Important information for secure operation.</li>
                     </ol>
 
-                    <h2 class="text-xl text-blue-700 mt-8 mb-4">💡 Important Notes Before You Start</h2>
+                    <h2 class="text-xl text-blue-700 mt-10 mb-4">💡 Important Notes Before You Start</h2>
                     <p class="text-gray-700 mb-2">
                         Tested on: **ASUS NUC 14 Essential** with **Intel N250 processor, 24GB Crucial RAM, and a 1TB SSD**.
                     </p>
-                    <ul class="list-disc pl-6 text-gray-700">
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
                         <li><strong>LXC Mode:</strong> We use a **privileged LXC container** with **Nesting** enabled. This is crucial for Docker and hardware passthrough. Refer to [Security Notes](#security-notes-en).</li>
                         <li><strong>IP Addresses:</strong> Replace `IP_DES_LXC`, `192.168.XXX.XXX`, and `192.168.YYY.YYY` with your actual IP addresses.</li>
                     </ul>
@@ -497,7 +497,7 @@ cameras:
 
                     <h3>1. Create the LXC Container</h3>
                     <p class="mt-4 text-gray-700">Create a new LXC via the **Proxmox web interface**. Key settings:</p>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Template:</strong> Debian 12 (bookworm) or Ubuntu 22.04.</li>
                         <li><strong>Hostname:</strong> e.g., `frigate`.</li>
                         <li><strong>Storage:</strong> 10-20 GB.</li>
@@ -510,7 +510,7 @@ cameras:
 
                     <h3>2. Hardware Passthrough (Intel iGPU & Coral USB)</h3>
                     <p class="mt-4 text-gray-700">We will pass through the iGPU and Coral USB stick to the LXC.</p>
-                    <ol class="list-decimal pl-6 mt-2 text-gray-700">
+                    <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Stop the container</strong> (replace `&lt;CT-ID&gt;`):
                             <pre><code>pct stop &lt;CT-ID&gt;</code></pre>
                         </li>
@@ -548,7 +548,7 @@ lxc.mount.entry: /dev/bus/usb dev/bus/usb none bind,optional,create=dir</code></
                     <p class="mt-4 text-gray-700">Check if iGPU and Coral USB are visible in the container:</p>
                     <pre><code>ls -l /dev/dri
 lsusb</code></pre>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Expected:</strong> `/dev/dri/renderD128` (or `card0`) and an `lsusb` entry for Coral (e.g., `1a6e:089a`).</li>
                         <li>**If `lsusb` is missing:**
                             <pre><code>apt update
@@ -558,19 +558,19 @@ apt install -y usbutils</code></pre>
 
                     <h3>4. Run the Interactive Installation Script</h3>
                     <p class="mt-4 text-gray-700">This script automates package, Docker, Portainer, and Frigate installation.</p>
-                    <ol class="list-decimal pl-6 mt-2 text-gray-700">
+                    <ol class="list-decimal pl-6 mt-2 text-gray-700 space-y-3">
                         <li><strong>Download the script:</strong>
-                            <pre><code>wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/install.sh</code></pre>
+                            <pre><code>wget https://raw.githubusercontent.com/BastiZ0/Frigate-under-Proxmox-XLC-on-ASUS-NUC-14/main/frigate-install.sh</code></pre>
                         </li>
                         <li><strong>Make it executable:</strong>
-                            <pre><code>chmod +x install.sh</code></pre>
+                            <pre><code>chmod +x frigate-install.sh</code></pre>
                         </li>
                         <li><strong>Start the script</strong> and follow prompts. It asks for a Frigate password and waits for your confirmation at each step:
-                            <pre><code>./install.sh</code></pre>
+                            <pre><code>./frigate-install.sh</code></pre>
                         </li>
                     </ol>
                     <p class="mt-4 text-gray-700"><strong>The script automates:</strong></p>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li>System updates and package installation (Coral Runtime, VAAPI drivers).</li>
                         <li>Docker, Docker Compose, and Portainer installation.</li>
                         <li>Creation of Frigate directories and `docker-compose.yml`.</li>
@@ -642,7 +642,7 @@ cameras:
                     <p class="mt-4 text-gray-700">If you encounter issues, these commands help identify the cause:</p>
 
                     <h3>On the Proxmox Host (Your NUC):</h3>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Check iGPU devices:</strong>
                             <pre><code>ls -l /dev/dri</code></pre>
                             <p class="text-sm italic"><em>Expected: <code>renderD128</code> (or <code>card0</code>) visible.</em></p>
@@ -657,7 +657,7 @@ cameras:
                     </ul>
 
                     <h3>In the LXC Container:</h3>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Check iGPU devices in container:</strong>
                             <pre><code>ls -l /dev/dri</code></pre>
                             <p class="text-sm italic"><em>Expected: <code>renderD128</code> (or <code>card0</code>) visible.</em></p>
@@ -685,7 +685,7 @@ cameras:
 
                 <section id="security-notes-en" class="mb-10">
                     <h2>⚠️ Security Notes & General Advice</h2>
-                    <ul class="list-disc pl-6 mt-2 text-gray-700">
+                    <ul class="list-disc pl-6 mt-2 text-gray-700 space-y-2">
                         <li><strong>Privileged LXC:</strong> Using a <strong>privileged LXC container</strong> with <strong>bindmounts</strong> poses a higher security risk. Only use within your <strong>trusted home network</strong>.</li>
                         <li><strong>Storage Space:</strong> Frigate logs and recordings require significant space. External USB SSD or NFS for `/media/frigate` is recommended.</li>
                         <li><strong>Backups:</strong> Perform regular backups of your LXCs via Proxmox GUI.</li>
@@ -702,6 +702,8 @@ cameras:
         const langEnBtn = document.getElementById('lang-en-btn');
         const contentDe = document.getElementById('content-de');
         const contentEn = document.getElementById('content-en');
+        const sidebar = document.getElementById('sidebar');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
 
         function setLanguage(lang) {
             if (lang === 'de') {
@@ -746,7 +748,41 @@ cameras:
                         behavior: 'smooth'
                     });
                 }
+                // Sidebar auf Mobilgeräten schließen, wenn ein Nav-Button geklickt wird
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.remove('active');
+                }
             });
+        });
+
+        // Hamburger Menü Funktionalität
+        hamburgerIcon.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Schließe Sidebar, wenn außerhalb geklickt wird (nur auf Mobil)
+        document.addEventListener('click', function(event) {
+            if (window.innerWidth < 1024 && sidebar.classList.contains('active')) {
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isClickOnHamburger = hamburgerIcon.contains(event.target);
+                if (!isClickInsideSidebar && !isClickOnHamburger) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Sidebar beim Laden auf Desktop sichtbar machen
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.add('active');
+        }
+
+        // Anpassung der Sidebar-Sichtbarkeit bei Größenänderung des Fensters
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.add('active');
+            } else {
+                sidebar.classList.remove('active');
+            }
         });
     </script>
 </body>
